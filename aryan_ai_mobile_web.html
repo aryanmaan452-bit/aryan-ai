@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AryanAi - AI Chatbot for Mobile">
+    <title>AryanAi - Mobile Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease-in;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .user-message {
+            justify-content: flex-end;
+        }
+
+        .ai-message {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 12px 15px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .user-message .message-content {
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai-message .message-content {
+            background: #e0e0e0;
+            color: #333;
+            border-bottom-left-radius: 4px;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 15px;
+            gap: 10px;
+            background: white;
+            border-top: 1px solid #ddd;
+            align-items: flex-end;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-area input:focus {
+            border-color: #667eea;
+        }
+
+        .input-area button {
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .input-area button:hover {
+            background: #764ba2;
+        }
+
+        .input-area button:active {
+            transform: scale(0.95);
+        }
+
+        .input-area button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: flex;
+            gap: 5px;
+            padding: 12px 15px;
+        }
+
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: bounce 1.4s infinite;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            40% {
+                transform: translateY(-10px);
+                opacity: 0.7;
+            }
+        }
+
+        .setup-screen {
+            display: none;
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .setup-screen.active {
+            display: flex;
+        }
+
+        .setup-screen h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .setup-screen input {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .setup-screen button {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .setup-screen button:hover {
+            background: #764ba2;
+        }
+
+        .setup-screen .help {
+            margin-top: 20px;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #c33;
+        }
+
+        @media (max-height: 600px) {
+            .header h1 {
+                font-size: 20px;
+            }
+            .message-content {
+                font-size: 13px;
+            }
+        }
+
+        .commands {
+            font-size: 12px;
+            color: #999;
+            padding: 10px;
+            text-align: center;
+            background: #f9f9f9;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #667eea;
+            margin: 0 2px;
+            animation: bounce 1.4s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AryanAi</h1>
+            <p>Your AI Assistant</p>
+        </div>
+
+        <!-- Setup Screen -->
+        <div class="setup-screen active" id="setupScreen">
+            <h2>Welcome to AryanAi</h2>
+            <input 
+                type="password" 
+                id="apiKeyInput" 
+                placeholder="Enter your API Key"
+                autocomplete="off"
+            >
+            <button onclick="saveApiKey()">Connect</button>
+            <div class="help">
+                <p>Don't have an API key?</p>
+                <p>Get one free from:</p>
+                <p><strong>console.anthropic.com</strong></p>
+            </div>
+        </div>
+
+        <!-- Chat Screen -->
+        <div id="chatScreen" style="display: none; flex: 1; display: flex; flex-direction: column;">
+            <div class="chat-box" id="chatBox"></div>
+            <div class="commands">
+                Type your question • Type 'clear' to reset • 'logout' to change API key
+            </div>
+            <div class="input-area">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    placeholder="Type your message..."
+                    onkeypress="handleKeyPress(event)"
+                >
+                <button onclick="sendMessage()" id="sendBtn">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.anthropic.com/v1/messages';
+        let apiKey = localStorage.getItem('aryan_api_key');
+        let conversationHistory = [];
+
+        // Initialize
+        if (apiKey) {
+            showChatScreen();
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            
+            if (!key) {
+                alert('Please enter your API key');
+                return;
+            }
+
+            if (!key.startsWith('sk-ant-')) {
+                alert('Invalid API key format. Should start with sk-ant-');
+                return;
+            }
+
+            apiKey = key;
+            localStorage.setItem('aryan_api_key', apiKey);
+            showChatScreen();
+        }
+
+        function showChatScreen() {
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('chatScreen').style.display = 'flex';
+            document.getElementById('messageInput').focus();
+        }
+
+        function logout() {
+            localStorage.removeItem('aryan_api_key');
+            apiKey = null;
+            conversationHistory = [];
+            document.getElementById('chatBox').innerHTML = '';
+            document.getElementById('setupScreen').style.display = 'flex';
+            document.getElementById('chatScreen').style.display = 'none';
+            document.getElementById('apiKeyInput').value = '';
+            document.getElementById('apiKeyInput').focus();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Handle commands
+            if (message.toLowerCase() === 'clear') {
+                conversationHistory = [];
+                document.getElementById('chatBox').innerHTML = '';
+                input.value = '';
+                addMessage('ai', 'Conversation cleared! Ready for a new topic.');
+                return;
+            }
+
+            if (message.toLowerCase() === 'logout') {
+                logout();
+                return;
+            }
+
+            // Add user message
+            addMessage('user', message);
+            input.value = '';
+            document.getElementById('sendBtn').disabled = true;
+
+            // Show loading
+            const loadingId = 'loading-' + Date.now();
+            const chatBox = document.getElementById('chatBox');
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = loadingId;
+            loadingDiv.className = 'message ai-message';
+            loadingDiv.innerHTML = `<div class="message-content"><div class="loading"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div></div>`;
+            chatBox.appendChild(loadingDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Send to API
+            getAiResponse(message, loadingId);
+        }
+
+        function addMessage(role, content) {
+            const chatBox = document.getElementById('chatBox');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}-message`;
+            messageDiv.innerHTML = `<div class="message-content">${escapeHtml(content)}</div>`;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            if (role === 'user') {
+                conversationHistory.push({
+                    role: 'user',
+                    content: content
+                });
+            }
+        }
+
+        async function getAiResponse(message, loadingId) {
+            try {
+                const response = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-opus-4-6',
+                        max_tokens: 1024,
+                        system: 'You are AryanAi, a helpful AI assistant. Provide clear, friendly, and helpful responses.',
+                        messages: conversationHistory
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const aiMessage = data.content[0].text;
+
+                // Remove loading
+                document.getElementById(loadingId).remove();
+
+                // Add AI response
+                addMessage('ai', aiMessage);
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: aiMessage
+                });
+
+            } catch (error) {
+                document.getElementById(loadingId).remove();
+                addMessage('ai', '❌ Error: ' + error.message);
+            } finally {
+                document.getElementById('sendBtn').disabled = false;
+                document.getElementById('messageInput').focus();
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Handle missing message
+        window.addEventListener('beforeunload', function(e) {
+            if (document.getElementById('messageInput').value.trim()) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+</html>
